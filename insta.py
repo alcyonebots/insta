@@ -74,8 +74,13 @@ def nx():
 nx()
 
 token = input(f' {F}({M}1{F}) {M} Enter Token{F}  ' + O)
+print("Token received:", token)  # Debugging print
+
 print(X + ' ═════════════════════════════════  ')
 ID = input(f' {F}({M}2{F}) {M} Enter ID{F}  ' + O)
+print("User ID received:", ID)  # Debugging print
+
+print("Starting threads...")
 
 console = Console()
 bb = 0
