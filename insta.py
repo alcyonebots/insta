@@ -1,4 +1,5 @@
 import os
+import traceback
 try:
   import requests
   import time
@@ -353,3 +354,7 @@ for i in range(10):
     t.start()
 for t in threads:
     t.join()      	
+  
+except Exception as e:
+    print("Error:", e)
+    traceback.print_exc()
