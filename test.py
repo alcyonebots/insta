@@ -1,4 +1,24 @@
 import os
+try:
+    import requests
+    import time
+    import hashlib
+    import uuid
+    from secrets import token_hex
+    import pycountry
+    import random
+    from OneClick import Hunter
+    from ms4 import InfoIG, RestInsta, UserAgentGenerator
+    import threading
+    from rich.console import Console
+    from rich.table import Table
+    from rich.text import Text
+    import json
+    import string
+    from user_agent import generate_user_agent
+except:
+    os.system("pip install OneClick stdiomask requests uuid ms4==2.10.0")
+
 import requests
 import time
 import hashlib
@@ -12,7 +32,7 @@ from secrets import token_hex
 from rich.console import Console
 from rich.table import Table
 from rich.text import Text
-from user_agent import generate_user_agent  
+from user_agent import generate_user_agent
 from OneClick import Hunter
 from ms4 import InfoIG, RestInsta, UserAgentGenerator
 
@@ -44,11 +64,11 @@ nx()
 
 # Getting user input
 token = input(f' {F}({M}1{F}) {M} Enter Token{F}  ' + O)
-print("Debug: Token received:", token)
+print(f"Debug: Token received: {token}")
 
 print(X + ' ═════════════════════════════════  ')
 ID = input(f' {F}({M}2{F}) {M} Enter ID{F}  ' + O)
-print("Debug: User ID received:", ID)
+print(f"Debug: User ID received: {ID}")
 
 console = Console()
 bb = 0
@@ -61,10 +81,10 @@ hit = 0
 def Tele(email):
     global hit
     print(f"Debug: Sending Telegram message for {email}")
-    
+
     user = email.split("@")[0]
     hit += 1
-    
+
     try:
         rest = RestInsta.Rest(user)["email"]
     except Exception as e:
@@ -109,50 +129,18 @@ def Tele(email):
         f.write(tlg + '\n')
 
 # Check Gmail function
-def check_gmail(email):
-    global bm, gm
-    print(f"Debug: Checking Gmail for {email}")
-
-    if "@" in email:
-        name = email.split("@")[0]
-    else:
-        name = email
-    
-    try:
-        agent = generate_user_agent()
-        response = requests.post("https://accounts.google.com/signup/v2/createusername", timeout=10)
-        print("Debug: Gmail response status:", response.status_code)
-        
-        if response.status_code == 200 and "usernameavailability" in response.text:
-            gm += 1
-            Tele(email)
-        else:
-            bm += 1
-    except Exception as e:
-        print("Debug: Gmail check failed:", e)
-        bm += 1
-
-# Variable Class
-class Variable:
-    country = [country.numeric for country in pycountry.countries]
-    num = random.choice(country)
-    sgin = hashlib.sha256(uuid.uuid4().hex.encode()).hexdigest()
-    csr = str(token_hex(8) * 2)
-    android = f"android-{uuid.uuid4().hex[:16]}"
-
-# Check Gmail function
 def CheckGmail(username):
     global gg, bb
-    print(f"Debug: Checking Instagram availability for {username}")
     email = f"{username}@gmail.com"
+    print(f"Debug: Checking Gmail for {email}")
 
     url = "https://i.instagram.com/api/v1/users/lookup/"
     headers = {'User-Agent': str(Hunter.Services())}
 
     try:
         response = requests.post(url, headers=headers, timeout=10)
-        print("Debug: Instagram API response:", response.status_code)
-        
+        print("Debug: Instagram API response status:", response.status_code)
+
         if '"status":"ok"' in response.text:
             gg += 1
             check_gmail(email)
@@ -162,18 +150,17 @@ def CheckGmail(username):
         print("Debug: Error in Instagram API request:", e)
         bb += 1
 
-    # Displaying table
     os.system('clear')
     table = Table(title=f"{O}Instagram HITS")
     table.add_column("Type", justify="center", style="cyan")
     table.add_column("Count", justify="center", style="magenta")
-    
+
     table.add_row("Hits", Text(str(hit), style="green"))
     table.add_row("GoodInsta", Text(str(gg), style="yellow"))
     table.add_row("BadInsta", Text(str(bb), style="red"))
     table.add_row("GoodEmail", Text(str(gm), style="blue"))
     table.add_row("BadEmail", Text(str(bm), style="red"))
-    
+
     console.print(table)
 
 # Username Generator
@@ -190,24 +177,19 @@ def get_username():
                                      timeout=10)
 
             print("Debug: Instagram username request status:", response.status_code)
-            print("Debug: Full Instagram API response:", response.text)  # Print full response
+            print("Debug: Full Instagram API response:", response.text)
 
             if response.status_code == 200:
                 data = response.json()
-                print("Debug: Parsed JSON response:", data)  # Print parsed JSON
-
-                if "data" in data and "user" in data["data"]:
-                    username = data["data"]["user"].get("username")
+                if data.get("data"):
+                    username = data["data"].get("user", {}).get("username")
                     if username:
                         print(f"Debug: Found username {username}")
                         CheckGmail(username)
                     else:
-                        print("Debug: No username found in response data.")
+                        print("Debug: No username found in response.")
                 else:
-                    print("Debug: Unexpected Instagram response format.")
-
-            else:
-                print("Debug: Instagram request failed.")
+                    print("Debug: Instagram response missing expected data.")
 
         except Exception as e:
             print("Debug: Error in get_username:", e)
