@@ -182,21 +182,33 @@ def get_username():
     while True:
         try:
             LsD = ''.join(random.choices(string.ascii_letters + string.digits, k=32))
+            bol = json.dumps({"id": str(random.randrange(128053904, 53186034340)), "render_surface": "PROFILE"})
+
             response = requests.post("https://www.instagram.com/api/graphql",
                                      headers={"X-FB-LSD": LsD, 'User-Agent': str(UserAgentGenerator)},
+                                     data={"lsd": LsD, "variables": bol, "doc_id": "25618261841150840"},
                                      timeout=10)
-            
+
             print("Debug: Instagram username request status:", response.status_code)
+            print("Debug: Full Instagram API response:", response.text)  # Print full response
 
             if response.status_code == 200:
-                username = response.json().get("data", {}).get("user", {}).get("username")
-                if username:
-                    print(f"Debug: Found username {username}")
-                    CheckGmail(username)
+                data = response.json()
+                print("Debug: Parsed JSON response:", data)  # Print parsed JSON
+
+                if "data" in data and "user" in data["data"]:
+                    username = data["data"]["user"].get("username")
+                    if username:
+                        print(f"Debug: Found username {username}")
+                        CheckGmail(username)
+                    else:
+                        print("Debug: No username found in response data.")
                 else:
-                    print("Debug: No username found in response.")
+                    print("Debug: Unexpected Instagram response format.")
+
             else:
                 print("Debug: Instagram request failed.")
+
         except Exception as e:
             print("Debug: Error in get_username:", e)
 
