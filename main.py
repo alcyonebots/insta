@@ -307,6 +307,10 @@ def CheckGmail(username):
         'X-FB-HTTP-Engine': "Liger",
     }
     try:
+        # Clear the screen before showing the table
+        os.system("clear")  # Use "cls" for Windows
+
+        # Create the table
         table = Table(title=f"{O}Instagram HITS")
         table.add_column("Type", justify="center", style="cyan", no_wrap=True)
         table.add_column("Count", justify="center", style="magenta")
@@ -323,14 +327,16 @@ def CheckGmail(username):
     except:
         bb += 1
 
-    os.system('clear')
+    # Add rows to the table
     table.add_row("Hits", Text(str(hit), style="green"))
     table.add_row("GoodInsta", Text(str(gg), style="yellow"))
     table.add_row("BadInsta", Text(str(bb), style="red"))
     table.add_row("GoodEmail", Text(str(gm), style="blue"))
     table.add_row("BadEmail", Text(str(bm), style="red"))   
     table.add_row("Emails", Text(str(email), style="white"))
-    table.add_row("Dev", "X44 Hacking ~~ @Shahil440")
+    table.add_row("Dev", "alcyone")
+
+    # Print the table to the console
     console.print(table)
 
 def get_username():
