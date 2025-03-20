@@ -73,6 +73,9 @@ async def rest_handler(event):
 # 📌 /insta Command (Fetch Instagram Profile)
 @client.on(events.NewMessage(pattern=r'^/insta(@' + BOT_USERNAME + r')?(?:\s+(.+))?$'))
 async def insta_handler(event):
+    if not await check_membership(event):
+        return
+
     username = event.pattern_match.group(2)
     
     if not username:
@@ -80,7 +83,8 @@ async def insta_handler(event):
             replied = await event.get_reply_message()
             username = replied.text.strip()
         else:
-            await event.reply("📌 **Usage: /insta <username>**")
+            msg = await event.reply("📌 **Usage: /insta <username>**")
+            await auto_delete(event, msg)
             return
 
     msg = await event.reply(f"🔍 Fetching details for `{username}`...")
@@ -91,18 +95,20 @@ async def insta_handler(event):
             "User-Agent": "Instagram 123.0.0.0 Android",
             "Referer": "https://www.instagram.com/",
             "Origin": "https://www.instagram.com/",
-            "X-CSRFToken": "BbJnjd.Jnw20VyXU0qSsHLV",
-            "Cookie": "sessionid=YOUR_SESSION_ID_HERE"
+            "X-CSRFToken": "fjpGbVKIVyVXMaLCwQMGVP",
+            "Cookie": "sessionid=16829956593%3AAb35PnGyCyyuca%3A24%3AAYdZ5xMFraWXM_4iP-r5ScRO9DRht8yLV2hc5E0rzQ"
         }
         response = requests.get(url, headers=headers)
 
         if response.status_code != 200:
             await msg.edit(f"🛑 Profile could be banned or doesn't exist.")
+            await auto_delete(event, msg)
             return
 
         user_data = response.json().get("data", {}).get("user", {})
         if not user_data:
             await msg.edit(f"🛑 Profile could be banned or doesn't exist.")
+            await auto_delete(event, msg)
             return
 
         profile_pic = user_data.get("profile_pic_url_hd", "")
@@ -118,7 +124,7 @@ async def insta_handler(event):
         external_url = user_data.get("external_url", "N/A")
 
         result = (
-             f"<b>📸 Instagram Profile Info</b><br>"
+            f"<b>📸 Instagram Profile Info</b><br>"
             f"<blockquote>"
             f"<b>👤Name:</b> {full_name}<br>\n"
             f"<b>🔗 Username:</b> @{username}<br>\n"
@@ -134,13 +140,16 @@ async def insta_handler(event):
         )
 
         if profile_pic:
-            await client.send_message(event.chat_id, result, file=profile_pic, parse_mode='html')
+            await client.send_file(event.chat_id, profile_pic, caption=result, parse_mode='html')
             await msg.delete()
         else:
             await msg.edit(result, parse_mode='html')
 
+        await auto_delete(event, msg)
+
     except Exception as e:
         await msg.edit(f"🛑 Error: {str(e)}")
+        await auto_delete(event, msg)
 
 print("🚀 Bot is running...")
 client.run_until_disconnected()
