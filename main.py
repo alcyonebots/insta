@@ -4,7 +4,7 @@ from telethon import TelegramClient, events
 
 # 🔥 Telegram Bot Credentials
 BOT_TOKEN = "7570457500:AAFZAJ1jMnwkCG-KnUx4TNjBn2WMLi8e8z8"
-BOT_USERNAME = "iskdlapaldnskqlpsdlksbot"
+BOT_USERNAME = "6698364560"
 
 client = TelegramClient("bot_sesn", api_id=6, api_hash="eb06d4abfb49dc3eeb1aeb98ae0f581e").start(bot_token=BOT_TOKEN)
 
@@ -25,6 +25,7 @@ async def start_handler(event):
 
 # 📌 /rest Command (Password Reset)
 @client.on(events.NewMessage(pattern=r'^/rest(@Enclvebot)?(?:\s+(.+))?$'))
+@client.on(events.NewMessage(pattern=r'^/rest(@Enclvebot)?(?:\s+(.+))?$'))
 async def rest_handler(event):
     username_or_email = event.pattern_match.group(2)
 
@@ -40,13 +41,17 @@ async def rest_handler(event):
     msg = await event.reply(f"🔄 Sending reset request for `{username_or_email}`...")
 
     try:
-        url = "https://www.instagram.com/accounts/account_recovery_send_ajax/"
+        url = "https://www.instagram.com/api/v1/web/accounts/send_password_reset/"
         headers = {
-            "User-Agent": "Instagram 123.0.0.0 Android",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
+            "Referer": "https://www.instagram.com/",
+            "Origin": "https://www.instagram.com",
+            "X-Requested-With": "XMLHttpRequest",
             "X-CSRFToken": "fjpGbVKIVyVXMaLCwQMGVP",
-            "Cookie": "sessionid=16829956593%3AAb35PnGyCyyuca%3A24%3AAYdZ5xMFraWXM_4iP-r5ScRO9DRht8yLV2hc5E0rzQ",
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Cookie": "sessionid=16829956593%3AAb35PnGyCyyuca%3A24%3AAYdZ5xMFraWXM_4iP-r5ScRO9DRht8yLV2hc5E0rzQ;"
         }
-        data = {"email_or_username": username_or_email}
+        data = {"email_or_username": username_or_email, "recaptcha_challenge": ""}
 
         response = requests.post(url, headers=headers, data=data)
         print("Response:", response.text)  # Debugging output
@@ -54,7 +59,7 @@ async def rest_handler(event):
         if response.status_code == 200 and '"status":"ok"' in response.text:
             await msg.edit(f"✅ Reset link sent to `{username_or_email}`.")
         else:
-            await msg.edit("❌ **Invalid username or email. Try again!**")
+            await msg.edit("❌ **Instagram rejected the request. Try again later!**")
 
     except Exception as e:
         await msg.edit(f"🛑 Error: {str(e)}")
@@ -113,21 +118,23 @@ async def insta_handler(event):
 
         result = (
             f"<b>📸 Instagram Profile Info</b>\n"
-            f"👤 <b>Name:</b> {full_name}\n"
-            f"🔗 <b>Username:</b> @{username}\n"
-            f"📜 <b>Bio:</b> {bio}\n"
-            f"🔗 <b>Website:</b> {external_url}\n"
-            f"👥 <b>Followers:</b> {followers}\n"
-            f"👥 <b>Following:</b> {following}\n"
-            f"📮 <b>Posts:</b> {posts}\n"
-            f"🔒 <b>Private:</b> {is_private}\n"
-            f"✅ <b>Verified:</b> {is_verified}\n"
-            f"🏢 <b>Business Account:</b> {is_business}\n"
+            f"<blockquote>"
+            f"👤 <b>Name:</b> {full_name}<br>"
+            f"🔗 <b>Username:</b> @{username}<br>"
+            f"📜 <b>Bio:</b> {bio}<br>"
+            f"🔗 <b>Website:</b> {external_url}<br>"
+            f"👥 <b>Followers:</b> {followers}<br>"
+            f"👥 <b>Following:</b> {following}<br>"
+            f"📮 <b>Posts:</b> {posts}<br>"
+            f"🔒 <b>Private:</b> {is_private}<br>"
+            f"✅ <b>Verified:</b> {is_verified}<br>"
+            f"🏢 <b>Business Account:</b> {is_business}<br>"
             f"📂 <b>Business Category:</b> {business_category}"
+            f"</blockquote>"
         )
 
         if profile_pic:
-            await client.send_file(event.chat_id, profile_pic, caption=result, parse_mode='html', force_document=False)
+            await client.send_message(event.chat_id, result, file=profile_pic, parse_mode='html')
             await msg.delete()
         else:
             await msg.edit(result, parse_mode='html')
